@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#16254F" />
+      <stop offset="55%" stop-color="#0A1128" />
+      <stop offset="100%" stop-color="#080D1A" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F3E5AB" />
+      <stop offset="50%" stop-color="#D4AF37" />
+      <stop offset="100%" stop-color="#AA820A" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="108" fill="url(#bgGrad)" />
+  <rect x="20" y="20" width="472" height="472" rx="92" fill="none" stroke="url(#goldGrad)" stroke-width="6" stroke-opacity="0.45" />
+  <path
+    d="M256 76 L404 134 V246 C404 344 338 416 256 444 C174 416 108 344 108 246 V134 Z"
+    fill="#0F1B3B"
+    stroke="url(#goldGrad)"
+    stroke-width="14"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M256 106 L376 154 V246 C376 326 322 386 256 412 C190 386 136 326 136 246 V154 Z"
+    fill="none"
+    stroke="#F3E5AB"
+    stroke-width="3"
+    stroke-opacity="0.35"
+    stroke-linejoin="round"
+  />
+  <text
+    x="256"
+    y="282"
+    text-anchor="middle"
+    font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+    font-size="112"
+    font-weight="900"
+    letter-spacing="4"
+    fill="url(#goldGrad)"
+  >GAC</text>
+  <text
+    x="256"
+    y="328"
+    text-anchor="middle"
+    font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+    font-size="24"
+    font-weight="700"
+    letter-spacing="8"
+    fill="#F3E5AB"
+  >ADVISORS</text>
+</svg>

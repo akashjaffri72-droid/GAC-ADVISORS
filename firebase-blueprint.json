@@ -1,0 +1,279 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with role-based access control (client, staff, super_admin)",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "fullName": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 120 },
+        "phone": { "type": "string", "maxLength": 25 },
+        "countryCode": { "type": "string", "maxLength": 8 },
+        "role": { "type": "string", "enum": ["client", "staff", "super_admin"] },
+        "language": { "type": "string", "enum": ["en", "ur"] },
+        "assignedSpecialty": { "type": "string", "maxLength": 100 },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["uid", "fullName", "email", "role"]
+    },
+    "VisaService": {
+      "title": "VisaService",
+      "description": "Visa consultancy service catalog item managed by Admin",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "country": { "type": "string", "maxLength": 60 },
+        "category": { "type": "string", "maxLength": 60 },
+        "title": { "type": "string", "maxLength": 120 },
+        "description": { "type": "string", "maxLength": 1000 },
+        "consultancyFee": { "type": "number" },
+        "currency": { "type": "string", "maxLength": 10 },
+        "estimatedProcessing": { "type": "string", "maxLength": 100 },
+        "eligibilityCriteria": { "type": "string", "maxLength": 2000 },
+        "requiredDocuments": { "type": "string", "maxLength": 2000 },
+        "importantInstructions": { "type": "string", "maxLength": 2000 },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "country", "category", "title", "consultancyFee", "isActive"]
+    },
+    "Application": {
+      "title": "Application",
+      "description": "Visa consultation application submitted by a client",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "trackingNumber": { "type": "string", "maxLength": 30 },
+        "clientId": { "type": "string", "maxLength": 128 },
+        "clientName": { "type": "string", "maxLength": 100 },
+        "clientEmail": { "type": "string", "maxLength": 120 },
+        "clientPhone": { "type": "string", "maxLength": 30 },
+        "assignedStaffId": { "type": "string", "maxLength": 128 },
+        "assignedStaffName": { "type": "string", "maxLength": 100 },
+        "country": { "type": "string", "maxLength": 60 },
+        "visaCategory": { "type": "string", "maxLength": 60 },
+        "serviceId": { "type": "string", "maxLength": 60 },
+        "status": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "submitted",
+            "under_initial_review",
+            "documents_required",
+            "documents_under_review",
+            "processing",
+            "ready_for_submission",
+            "submitted_to_embassy",
+            "decision_received",
+            "completed",
+            "on_hold",
+            "cancelled"
+          ]
+        },
+        "personalInfo": { "type": "object" },
+        "travelInfo": { "type": "object" },
+        "financialInfo": { "type": "object" },
+        "clientRemarks": { "type": "string", "maxLength": 2000 },
+        "consultancyFee": { "type": "number" },
+        "amountPaid": { "type": "number" },
+        "paymentStatus": { "type": "string", "enum": ["unpaid", "partial", "paid"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "trackingNumber", "clientId", "country", "visaCategory", "status"]
+    },
+    "DocumentItem": {
+      "title": "DocumentItem",
+      "description": "Uploaded verification document record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "applicationId": { "type": "string", "maxLength": 128 },
+        "clientId": { "type": "string", "maxLength": 128 },
+        "category": { "type": "string", "maxLength": 60 },
+        "title": { "type": "string", "maxLength": 120 },
+        "fileName": { "type": "string", "maxLength": 200 },
+        "fileUrl": { "type": "string", "maxLength": 1000 },
+        "fileSize": { "type": "string", "maxLength": 30 },
+        "fileType": { "type": "string", "maxLength": 60 },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected", "reupload_requested"] },
+        "rejectionReason": { "type": "string", "maxLength": 500 },
+        "reviewedBy": { "type": "string", "maxLength": 100 },
+        "uploadedAt": { "type": "string" },
+        "reviewedAt": { "type": "string" }
+      },
+      "required": ["id", "applicationId", "clientId", "category", "title", "status"]
+    },
+    "Payment": {
+      "title": "Payment",
+      "description": "Payment record for consultancy fees",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "applicationId": { "type": "string", "maxLength": 128 },
+        "clientId": { "type": "string", "maxLength": 128 },
+        "clientName": { "type": "string", "maxLength": 100 },
+        "amount": { "type": "number" },
+        "currency": { "type": "string", "maxLength": 10 },
+        "method": { "type": "string", "enum": ["bank_transfer", "cash", "online"] },
+        "transactionReference": { "type": "string", "maxLength": 100 },
+        "status": { "type": "string", "enum": ["pending", "verified", "rejected"] },
+        "receiptNumber": { "type": "string", "maxLength": 50 },
+        "recordedBy": { "type": "string", "maxLength": 100 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "applicationId", "clientId", "amount", "method", "status"]
+    },
+    "Appointment": {
+      "title": "Appointment",
+      "description": "Consultation appointment booking with GAC Advisors",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "clientId": { "type": "string", "maxLength": 128 },
+        "clientName": { "type": "string", "maxLength": 100 },
+        "clientPhone": { "type": "string", "maxLength": 30 },
+        "appointmentType": { "type": "string", "enum": ["in_person", "virtual_video", "phone"] },
+        "visaCategory": { "type": "string", "maxLength": 60 },
+        "date": { "type": "string", "maxLength": 20 },
+        "timeSlot": { "type": "string", "maxLength": 30 },
+        "assignedStaffId": { "type": "string", "maxLength": 128 },
+        "assignedStaffName": { "type": "string", "maxLength": 100 },
+        "status": { "type": "string", "enum": ["pending", "approved", "completed", "cancelled", "rescheduled"] },
+        "notes": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "clientId", "appointmentType", "date", "timeSlot", "status"]
+    },
+    "InternalNote": {
+      "title": "InternalNote",
+      "description": "Private staff and admin consultation notes on applications",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "applicationId": { "type": "string", "maxLength": 128 },
+        "authorId": { "type": "string", "maxLength": 128 },
+        "authorName": { "type": "string", "maxLength": 100 },
+        "authorRole": { "type": "string", "enum": ["staff", "super_admin"] },
+        "content": { "type": "string", "maxLength": 2000 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "applicationId", "authorId", "content"]
+    },
+    "StatusHistory": {
+      "title": "StatusHistory",
+      "description": "Timestamped log of application status transitions",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "applicationId": { "type": "string", "maxLength": 128 },
+        "previousStatus": { "type": "string", "maxLength": 50 },
+        "newStatus": { "type": "string", "maxLength": 50 },
+        "updatedBy": { "type": "string", "maxLength": 100 },
+        "remarks": { "type": "string", "maxLength": 500 },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "applicationId", "newStatus", "timestamp"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "User notifications for updates, approvals and requests",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "recipientId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 120 },
+        "message": { "type": "string", "maxLength": 500 },
+        "type": { "type": "string", "enum": ["status_change", "document_review", "payment", "appointment", "announcement"] },
+        "relatedId": { "type": "string", "maxLength": 128 },
+        "isRead": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "recipientId", "title", "message", "isRead"]
+    },
+    "CompanySettings": {
+      "title": "CompanySettings",
+      "description": "GAC Advisors office information and contact settings",
+      "type": "object",
+      "properties": {
+        "officeAddress": { "type": "string", "maxLength": 200 },
+        "pakistanWhatsApp": { "type": "string", "maxLength": 30 },
+        "uaeWhatsApp": { "type": "string", "maxLength": 30 },
+        "supportEmail": { "type": "string", "maxLength": 120 },
+        "workingHours": { "type": "string", "maxLength": 100 },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["officeAddress", "pakistanWhatsApp", "uaeWhatsApp"]
+    },
+    "ClientDirectoryEntry": {
+      "title": "ClientDirectoryEntry",
+      "description": "Privacy-safe client directory storing only client UID, fullName, and active flag (no PII)",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "fullName": { "type": "string", "maxLength": 100 },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["uid", "fullName", "isActive"]
+    }
+  },
+  "firestore": {
+    "/client_directory/{clientId}": {
+      "schema": "ClientDirectoryEntry",
+      "description": "Name-only client directory visible to signed-in users without exposing private PII or case records"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles including role (client, staff, super_admin)"
+    },
+    "/admins/{userId}": {
+      "schema": "User",
+      "description": "Super admin registry document for role verification"
+    },
+    "/staff/{userId}": {
+      "schema": "User",
+      "description": "Staff registry document for role verification"
+    },
+    "/services/{serviceId}": {
+      "schema": "VisaService",
+      "description": "Visa service offerings catalog"
+    },
+    "/applications/{applicationId}": {
+      "schema": "Application",
+      "description": "Client visa applications"
+    },
+    "/documents/{documentId}": {
+      "schema": "DocumentItem",
+      "description": "Client uploaded documents and verification records"
+    },
+    "/payments/{paymentId}": {
+      "schema": "Payment",
+      "description": "Consultancy fee payments and receipts"
+    },
+    "/appointments/{appointmentId}": {
+      "schema": "Appointment",
+      "description": "Client consultation appointments"
+    },
+    "/internal_notes/{noteId}": {
+      "schema": "InternalNote",
+      "description": "Confidential staff and admin case notes"
+    },
+    "/status_history/{historyId}": {
+      "schema": "StatusHistory",
+      "description": "Application status transition logs"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "User notifications"
+    },
+    "/company_settings/main": {
+      "schema": "CompanySettings",
+      "description": "Configurable company information"
+    }
+  }
+}

@@ -1,0 +1,214 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isBootstrappedAdmin() {
+      return isSignedIn() && request.auth.token.email == 'akashjaffri72@gmail.com';
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        isBootstrappedAdmin() ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isStaff() {
+      return isSignedIn() && (
+        isAdmin() ||
+        exists(/databases/$(database)/documents/staff/$(request.auth.uid))
+      );
+    }
+
+    // Client Directory (Names & Count ONLY - No PII, No Email/Phone/Applications)
+    match /client_directory/{clientId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdmin() || (
+        isSignedIn() && isValidId(clientId) &&
+        request.auth.uid == clientId &&
+        incoming().keys().hasAll(['uid', 'fullName', 'isActive']) &&
+        incoming().keys().hasOnly(['uid', 'fullName', 'isActive']) &&
+        incoming().uid == request.auth.uid &&
+        incoming().fullName is string && incoming().fullName.size() <= 100 &&
+        incoming().isActive is bool
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Users Collection (Strict PII Isolation: Owner or Admin only)
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isSignedIn() && isValidId(userId) && request.auth.uid == userId
+                    && incoming().role == 'client';
+      allow update: if isSignedIn() && (
+        (request.auth.uid == userId && incoming().role == existing().role) ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Admins registry
+    match /admins/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isBootstrappedAdmin() || isAdmin();
+    }
+
+    // Staff registry
+    match /staff/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Visa Services catalog
+    match /services/{serviceId} {
+      allow read: if true; // Public catalog for exploration
+      allow write: if isAdmin();
+    }
+
+    // Applications (Strict Ownership: Client owns their own, Staff sees assigned only, Admin sees all)
+    match /applications/{applicationId} {
+      allow get: if isSignedIn() && (
+        resource.data.clientId == request.auth.uid ||
+        (isStaff() && resource.data.assignedStaffId == request.auth.uid) ||
+        isAdmin()
+      );
+      allow list: if isSignedIn() && (
+        isAdmin() ||
+        (isStaff() && resource.data.assignedStaffId == request.auth.uid) ||
+        resource.data.clientId == request.auth.uid
+      );
+      allow create: if isSignedIn() && isValidId(applicationId) &&
+                    incoming().clientId == request.auth.uid;
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        (isStaff() && resource.data.assignedStaffId == request.auth.uid) ||
+        (resource.data.clientId == request.auth.uid && incoming().clientId == request.auth.uid)
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Documents (Strict Ownership: Client owns their own, Admin/Assigned Staff only)
+    match /documents/{documentId} {
+      allow get: if isSignedIn() && (
+        resource.data.clientId == request.auth.uid ||
+        isAdmin() ||
+        isStaff()
+      );
+      allow list: if isSignedIn() && (
+        isAdmin() ||
+        isStaff() ||
+        resource.data.clientId == request.auth.uid
+      );
+      allow create: if isSignedIn() && isValidId(documentId) &&
+                    incoming().clientId == request.auth.uid;
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        isStaff() ||
+        (resource.data.clientId == request.auth.uid && incoming().status == existing().status)
+      );
+      allow delete: if isSignedIn() && (
+        isAdmin() ||
+        (resource.data.clientId == request.auth.uid && resource.data.status == 'pending')
+      );
+    }
+
+    // Payments (Strict Ownership: Client owns their own, Admin manages all)
+    match /payments/{paymentId} {
+      allow get: if isSignedIn() && (
+        resource.data.clientId == request.auth.uid ||
+        isAdmin() ||
+        isStaff()
+      );
+      allow list: if isSignedIn() && (
+        isAdmin() ||
+        isStaff() ||
+        resource.data.clientId == request.auth.uid
+      );
+      allow create: if isSignedIn() && isValidId(paymentId) && (
+        incoming().clientId == request.auth.uid ||
+        isAdmin() ||
+        isStaff()
+      );
+      allow update: if isAdmin() || isStaff();
+      allow delete: if isAdmin();
+    }
+
+    // Appointments (Strict Ownership: Client owns their own, Admin/Staff manages)
+    match /appointments/{appointmentId} {
+      allow get: if isSignedIn() && (
+        resource.data.clientId == request.auth.uid ||
+        isAdmin() ||
+        (isStaff() && resource.data.assignedStaffId == request.auth.uid)
+      );
+      allow list: if isSignedIn() && (
+        isAdmin() ||
+        (isStaff() && resource.data.assignedStaffId == request.auth.uid) ||
+        resource.data.clientId == request.auth.uid
+      );
+      allow create: if isSignedIn() && isValidId(appointmentId) &&
+                    incoming().clientId == request.auth.uid;
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        (isStaff() && resource.data.assignedStaffId == request.auth.uid) ||
+        (resource.data.clientId == request.auth.uid && incoming().clientId == request.auth.uid)
+      );
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.clientId == request.auth.uid);
+    }
+
+    // Internal Notes (Staff & Super Admin ONLY - Never visible to clients)
+    match /internal_notes/{noteId} {
+      allow read, write: if isStaff();
+    }
+
+    // Status History (Owner or Staff/Admin only)
+    match /status_history/{historyId} {
+      allow read: if isSignedIn() && (
+        isAdmin() ||
+        isStaff() ||
+        resource.data.clientId == request.auth.uid
+      );
+      allow write: if isStaff();
+    }
+
+    // Notifications (Recipient or Admin only)
+    match /notifications/{notificationId} {
+      allow get, list: if isSignedIn() && (
+        resource.data.recipientId == request.auth.uid ||
+        resource.data.recipientId == 'all' ||
+        isAdmin()
+      );
+      allow create: if isStaff();
+      allow update: if isSignedIn() && resource.data.recipientId == request.auth.uid;
+      allow delete: if isSignedIn() && (resource.data.recipientId == request.auth.uid || isAdmin());
+    }
+
+    // Company Settings
+    match /company_settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
